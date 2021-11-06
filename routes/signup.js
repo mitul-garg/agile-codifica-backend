@@ -14,21 +14,31 @@ router.get("/signup", (req, res) => {
 // POST Request
 router.post("/signup", async (req, res) => {
   try {
-    const { email, password, codeforcesHandle } = req.body;
+    let { email, password, codeforcesHandle } = req.body;
 
+    email = validator.trim(email);
+    password = validator.trim(password);
     // Validators
     if (!validator.isEmail(email)) {
       throw new Error("Invalid Email");
     }
 
-    const isUserEmail = await userModel.findOne({ email: email });
+    // For Strong Password
+    // if (
+    //   !validator.isStrongPassword(password, {
+    //     minLength: 6,
+    //   })
+    // ) {
+    //   throw new Error("Weak Password");
+    // }
+
+    // Avoid Duplicate
+    const isUserEmail = await userModel.findOne({ email, codeforcesHandle });
     if (isUserEmail) {
-      throw new Error("Email already exist");
+      throw new Error("Email or CodeForces Handle already exist");
     }
 
     const handleVerifyURL = `https://codeforces.com/api/user.info?handles=${codeforcesHandle}`;
-
-    //Password Validation will add later
 
     // CodeForces Handle Validation
     let ishandleValid = await axios.get(handleVerifyURL);
@@ -45,13 +55,13 @@ router.post("/signup", async (req, res) => {
         await newUser.save();
         const token = await newUser.generateAuthToken();
 
-        // res.redirect('profile')
-        res.json({ user: newUser, token });
+        res.status(201).json({ user: newUser });
+        //res.send({ newUser, token })
       } else {
         res.json({ msg: "wait" });
       }
     } else {
-      res.json({ msg: "Invalid Codeforces Handle" });
+      res.json({ msg: `User with handle ${codeforcesHandle} not found ` });
     }
   } catch (e) {
     console.log(e);

@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const path = require("path");
 const jwt = require("jsonwebtoken");
-const validatorJs = require("validator.js");
+const validator = require("validator");
 const bcryptjs = require("bcryptjs");
 const mongoose = require("mongoose");
 const axios = require("axios");
@@ -13,22 +13,13 @@ const indexPageRoute = require("./routes/index");
 const loginPageRoute = require("./routes/login");
 const signUpPageRoute = require("./routes/signup");
 const profilePageRoute = require("./routes/profile");
+const userEditorial = require("./routes/myEditorials");
+const writeEditorial = require("./routes/writeEditorial");
 
 // Database connection
-mongoose
-  .connect("mongodb://localhost:27017/Codifica", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Connection is on!....");
-  })
-  .catch((err) => {
-    console.log("Error");
-    console.log(err);
-  });
+require("./db/mongoose");
 
-// mitul ki kadi
+// cors headers
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader(
@@ -38,7 +29,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
   next();
 });
-// mitul ki kadi
+// cors headers
 
 // Body Parser
 app.use(express.urlencoded({ extended: true }));
@@ -52,9 +43,28 @@ app.use("/", indexPageRoute); // for displaying Home Page
 app.use("/", loginPageRoute); // for displaying Login
 app.use("/", signUpPageRoute); // for displaying Sign Up
 app.use("/", profilePageRoute); // for displaying Profile Up
+app.use("/", userEditorial); // for displaying User Editorials
+app.use("/", writeEditorial); // for Writing Editorials
 
 //ON PORT
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
   console.log(`On Port ${PORT}`);
 });
+
+const userModel = require("./models/user");
+const editorialModel = require("./models/editorial");
+
+const f = async () => {
+  try {
+    // const editorial = await editorialModel.findById('616fd5ad367f81da497b7a1d');
+    // await editorial.populate('owner')
+    // console.log(editorial.owner);
+
+    const user = await userModel.find({ email: "sanidhya10628@gmail.com" });
+    await user.populate("editorials");
+    console.log(user.editorials);
+  } catch (e) {
+    console.log(e);
+  }
+};
