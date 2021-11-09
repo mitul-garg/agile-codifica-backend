@@ -27,4 +27,15 @@ router.get("/editorials", async (req, res) => {
   }
 });
 
+router.get("/editorial/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const editorial = await editorialModel.findById(id);
+    res.status(200).json(editorial);
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ msg: "Something Went Wrong. Try again" });
+  }
+});
+
 module.exports = router;
